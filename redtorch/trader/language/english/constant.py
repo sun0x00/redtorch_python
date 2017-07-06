@@ -89,7 +89,7 @@ CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
 CURRENCY_NONE = ''              # 空货币
 
 # 数据库
-LOG_DB_NAME = 'VnTrader_Log_Db'
+LOG_DB_NAME = 'redtorch_log_db'
 
 # 接口类型
 GATEWAYTYPE_EQUITY = 'equity'                   # 股票、ETF、债券
@@ -98,4 +98,4 @@ GATEWAYTYPE_INTERNATIONAL = 'international'     # 外盘
 GATEWAYTYPE_BTC = 'btc'                         # 比特币
 GATEWAYTYPE_DATA = 'data'                       # 数据（非交易）
 
-RED_TORCH_DB_NAME = 'Red_Torch_DB'
+RED_TORCH_DB_NAME = 'red_torch_db'
