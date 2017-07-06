@@ -13,8 +13,8 @@
 
 from __future__ import division
 
-from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
+from redtorch.trader.vtObject import VtBarData
+from redtorch.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
 from redtorch.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 

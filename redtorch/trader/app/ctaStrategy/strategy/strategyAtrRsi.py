@@ -13,8 +13,8 @@
 import talib
 import numpy as np
 
-from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING
+from redtorch.trader.vtObject import VtBarData
+from redtorch.trader.vtConstant import EMPTY_STRING
 from redtorch.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 

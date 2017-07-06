@@ -6,8 +6,8 @@ DualThrust交易策略
 
 from datetime import time
 
-from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING
+from redtorch.trader.vtObject import VtBarData
+from redtorch.trader.vtConstant import EMPTY_STRING
 from redtorch.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 

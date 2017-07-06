@@ -15,8 +15,8 @@ from __future__ import division
 import talib
 import numpy as np
 
-from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING
+from redtorch.trader.vtObject import VtBarData
+from redtorch.trader.vtConstant import EMPTY_STRING
 from redtorch.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
@@ -283,8 +283,8 @@ class KkStrategy(CtaTemplate):
 if __name__ == '__main__':
     # 提供直接双击回测的功能
     # 导入PyQt4的包是为了保证matplotlib使用PyQt4而不是PySide，防止初始化出错
-    from app.ctaStrategy.ctaBacktesting import *
-    from vnpy.trader.uiBasicWidget  import QtCore, QtGui
+    from redtorch.trader.app.ctaStrategy.ctaBacktesting import *
+    from redtorch.trader.uiBasicWidget  import QtCore, QtGui
     
     # 创建回测引擎
     engine = BacktestingEngine()
