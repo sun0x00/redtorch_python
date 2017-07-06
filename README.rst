@@ -4,21 +4,21 @@ RedTorch
 简介
 -----
 
-本项目致力于为期货多账户管理提供便捷的的操作方法，由开源项目`vnpy <http://www.vnpy.org/ >`_ 修改而来,在使用本项目之前，请首先了解vnpy的相关协议和内容。
+本项目致力于为期货多账户管理提供便捷的的操作方法，由开源项目 `vnpy<http://www.vnpy.org/ >`_ 修改而来,在使用本项目之前，请首先了解vnpy的相关协议和内容。
 
 当前项目仅支持CTP接口的动态管理
 
 环境准备
 ----
 
-请根据`vnpy v1.6.2<https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 准备相关软件环境
+请根据 `vnpy-v1.6.2<https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 准备相关软件环境
 
 安装
 ----
 
-下载`vnpy v1.6.2<https://github.com/vnpy/vnpy/releases/tag/v1.6.2`_ 或通过命令pip install vnpy==1.6.2安装vnpy
+下载 `vnpy-v1.6.2<https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 或通过命令pip install vnpy==1.6.2安装vnpy
 
-下载本项目，使用IDE导入，推荐使用`PyCharm<https://www.jetbrains.com/pycharm/`_ ,运行redtorch/trader/run.py
+下载本项目，使用IDE导入，推荐使用 `PyCharm<https://www.jetbrains.com/pycharm/>`_ ,运行redtorch/trader/run.py
 
 **如果使用解压安装vnpy,可能导致redtorch无法访问vnpy中的包,请将vnpy复制到redtorch同级目录,如下**
 
