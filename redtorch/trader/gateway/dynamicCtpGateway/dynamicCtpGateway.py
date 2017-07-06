@@ -115,7 +115,6 @@ class DynamicCtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
-        print self.userID+"----111"
         try:
             if self.authCode is not None:
                 self.tdApi.requireAuthentication = True
@@ -130,37 +129,31 @@ class DynamicCtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        print self.userID+"----112"
         self.mdApi.subscribe(subscribeReq)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
-        print self.userID+"----113"
         return self.tdApi.sendOrder(orderReq)
         
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        print self.userID+"----114"
         self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
-        print self.userID+"----115"
         self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        print self.userID+"----116"
         self.tdApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        print self.userID+"----117"
         self.stopQuery()
         if self.mdConnected:
             self.mdApi.close()
@@ -170,12 +163,10 @@ class DynamicCtpGateway(VtGateway):
 
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
-        print self.userID+"----1170"
 
     #----------------------------------------------------------------------
     def initQuery(self):
         """初始化连续查询"""
-        print self.userID+"----118"
         if self.qryEnabled:
             # 需要循环的查询函数列表
             self.qryFunctionList = [self.qryAccount, self.qryPosition]
@@ -189,7 +180,6 @@ class DynamicCtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def query(self, event):
         """注册到事件处理引擎上的查询函数"""
-        print self.userID+"----119"
         self.qryCount += 1
         
         if self.qryCount > self.qryTrigger:
@@ -208,20 +198,17 @@ class DynamicCtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def startQuery(self):
         """启动连续查询"""
-        print self.userID+"----120"
         self.eventEngine.register(EVENT_TIMER, self.query)
 
 
     #----------------------------------------------------------------------
     def stopQuery(self):
         """关闭连续查询"""
-        print self.userID+"----121"
         self.eventEngine.unregister(EVENT_TIMER, self.query)
 
     #----------------------------------------------------------------------
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
-        print self.userID+"----122"
         self.qryEnabled = qryEnabled
     
 
