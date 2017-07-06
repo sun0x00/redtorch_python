@@ -27,7 +27,6 @@ RedTorch
     - redtorck
     - vnpy
 
-
 兼容性说明
 -------
 
