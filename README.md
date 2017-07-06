@@ -17,7 +17,7 @@
 
 下载[vnpy v1.6.2](https://github.com/vnpy/vnpy/releases/tag/v1.6.2)或通过命令pip install vnpy==1.6.2安装vnpy
 
-下载本项目，使用IDE导入，推荐使用[PyCharm](https://www.jetbrains.com/pycharm/),运行redtorch.trader.run.py
+下载本项目，使用IDE导入，推荐使用[PyCharm](https://www.jetbrains.com/pycharm/),运行redtorch/trader/run.py
 
 **如果使用解压安装vnpy,可能导致redtorch无法访问vnpy中的包,请将vnpy复制到redtorch同级目录,如下**
 
