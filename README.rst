@@ -44,7 +44,7 @@ RedTorch
 
 **如果使用解压安装vnpy,可能导致redtorch无法访问vnpy中的包,请将vnpy复制到redtorch同级目录,如下**
 
- + you_project_dir
+ + your_project_dir
 
     - redtorch
     - vnpy
