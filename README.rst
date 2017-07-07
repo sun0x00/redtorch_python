@@ -13,6 +13,19 @@ RedTorch
 
 请根据 `vnpy-v1.6.2 <https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 准备相关软件环境
 
+兼容性说明
+-------
+
+当前版本基于vnpy 1.6.2修改,主要引用了vnpy.api包中的内容,其他包名均已修改以便避免冲突，部分代码做了较大改动，修改不影响vnpy原版的正常使用,但因此请注意,vnpy/api包中的内容为vnpy和redtorch共用，请谨慎修改
+
+有兼容vnpy后续版本的计划
+
+已知重要提醒
+---------
+
+当前项目仍然处于Alpha开发阶段，由于动态管理账户和vnpy原设计理念有较大不同，所以在账户监控UI更新，下单控件中选择接口等操作仍存在bug,未来会陆续修改或替换，所有代码，仅供参考
+
+
 安装
 ----
 
@@ -31,17 +44,11 @@ RedTorch
 
 **如果使用解压安装vnpy,可能导致redtorch无法访问vnpy中的包,请将vnpy复制到redtorch同级目录,如下**
 
- + redtorch_project
+ + you_project_dir
 
-    - redtorck
+    - redtorch
     - vnpy
 
-兼容性说明
--------
-
-当前版本基于vnpy 1.6.2修改,主要引用了vnpy.api包中的内容,其他包名均已变更,修改不影响vnpy原版的正常使用,因此请注意,vnpy/api包中的内容为vnpy和redtorch共用，请谨慎修改
-
-有兼容vnpy后续版本的计划
 
 联系作者
 ------
