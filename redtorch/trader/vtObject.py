@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 import time
+from logging import INFO
 
 from redtorch.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE,
                                     EMPTY_FLOAT, EMPTY_INT)
@@ -236,6 +237,7 @@ class VtLogData(VtBaseData):
         
         self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
         self.logContent = EMPTY_UNICODE                         # 日志信息
+        self.logLevel = INFO                                    # 日志级别
 
 
 ########################################################################
@@ -260,6 +262,7 @@ class VtContractData(VtBaseData):
         self.strikePrice = EMPTY_FLOAT          # 期权行权价
         self.underlyingSymbol = EMPTY_STRING    # 标的物合约代码
         self.optionType = EMPTY_UNICODE         # 期权类型
+        self.expiryDate = EMPTY_STRING          # 到期日
 
 
 ########################################################################
@@ -289,6 +292,7 @@ class VtOrderReq(object):
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所
+        self.vtSymbol = EMPTY_STRING            # VT合约代码
         self.price = EMPTY_FLOAT                # 价格
         self.volume = EMPTY_INT                 # 数量
     
@@ -315,7 +319,8 @@ class VtCancelOrderReq(object):
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所
-        
+        self.vtSymbol = EMPTY_STRING            # VT合约代码
+
         # 以下字段主要和CTP、LTS类接口相关
         self.orderID = EMPTY_STRING             # 报单号
         self.frontID = EMPTY_STRING             # 前置机号

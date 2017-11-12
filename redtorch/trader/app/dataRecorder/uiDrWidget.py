@@ -4,13 +4,10 @@
 行情记录模块相关的GUI控制组件
 '''
 
-import json
-
-from qtpy import QtWidgets, QtCore
-
-from redtorch.trader.app.dataRecorder.language import text
 from redtorch.event import Event
-from redtorch.trader.vtEvent import *
+from redtorch.trader.uiQt import QtWidgets, QtCore
+from .drBase import EVENT_DATARECORDER_LOG
+from .language import text
 
 
 ########################################################################
@@ -63,7 +60,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.tickTable.setColumnCount(2)
         self.tickTable.verticalHeader().setVisible(False)
         self.tickTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.tickTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.tickTable.setAlternatingRowColors(True)
         self.tickTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
         
@@ -72,7 +68,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.barTable.setColumnCount(2)
         self.barTable.verticalHeader().setVisible(False)
         self.barTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.barTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.barTable.setAlternatingRowColors(True)        
         self.barTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
 
@@ -81,7 +76,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.activeTable.setColumnCount(2)
         self.activeTable.verticalHeader().setVisible(False)
         self.activeTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.activeTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.activeTable.setAlternatingRowColors(True)        
         self.activeTable.setHorizontalHeaderLabels([text.DOMINANT_SYMBOL, text.CONTRACT_SYMBOL])
 
@@ -121,32 +115,27 @@ class DrEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def updateSetting(self):
         """显示引擎行情记录配置"""
-        with open(self.drEngine.settingFileName) as f:
-            drSetting = json.load(f)
-    
-            if 'tick' in drSetting:
-                l = drSetting['tick']
-    
-                for setting in l:
-                    self.tickTable.insertRow(0)
-                    self.tickTable.setItem(0, 0, TableCell(setting[0]))
-                    self.tickTable.setItem(0, 1, TableCell(setting[1]))
-    
-            if 'bar' in drSetting:
-                l = drSetting['bar']
-    
-                for setting in l:
-                    self.barTable.insertRow(0)
-                    self.barTable.setItem(0, 0, TableCell(setting[0]))
-                    self.barTable.setItem(0, 1, TableCell(setting[1])) 
-    
-            if 'active' in drSetting:
-                d = drSetting['active']
-    
-                for activeSymbol, symbol in d.items():
-                    self.activeTable.insertRow(0)
-                    self.activeTable.setItem(0, 0, TableCell(activeSymbol))
-                    self.activeTable.setItem(0, 1, TableCell(symbol))
+        setting, activeSetting = self.drEngine.getSetting()
+        
+        for d in setting.values():
+            if 'tick' in d and d['tick']:
+                self.tickTable.insertRow(0)
+                self.tickTable.setItem(0, 0, TableCell(d['symbol']))
+                self.tickTable.setItem(0, 1, TableCell(d['gateway']))                
+                
+            if 'bar' in d and d['bar']:
+                self.barTable.insertRow(0)
+                self.barTable.setItem(0, 0, TableCell(d['symbol']))
+                self.barTable.setItem(0, 1, TableCell(d['gateway'])) 
+
+        for vtSymbol, activeSymbol in activeSetting.items():
+            self.activeTable.insertRow(0)
+            self.activeTable.setItem(0, 0, TableCell(activeSymbol))
+            self.activeTable.setItem(0, 1, TableCell(vtSymbol))
+                
+        self.tickTable.resizeColumnsToContents()
+        self.barTable.resizeColumnsToContents()
+        self.activeTable.resizeColumnsToContents()
     
     
     

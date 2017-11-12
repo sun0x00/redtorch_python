@@ -11,12 +11,12 @@ RedTorch
 环境准备
 ----
 
-请根据 `vnpy-v1.6.2 <https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 准备相关软件环境
+请参考 `vnpy-v1.7.1 <https://github.com/vnpy/vnpy/tree/v1.7.1>`_ 准备相关软件环境，主要是32位python27和TA-Lib
 
 兼容性说明
 -------
 
-当前版本基于vnpy 1.6.2修改,主要引用了vnpy.api包中的内容,其他包名均已修改以便避免冲突，部分代码做了较大改动，修改不影响vnpy原版的正常使用,但因此请注意,vnpy/api包中的内容为vnpy和redtorch共用，请谨慎修改
+当前版本基于vnpy 1.7.1修改,完全复制了其包结构，但只移植了CTP接口，包名均已修改以便避与vnpy免冲突，因此不影响vnpy原版的正常使用,部分代码做了较大改动。
 
 有兼容vnpy后续版本的计划
 
@@ -32,22 +32,11 @@ RedTorch
 推荐方法
 ::::::
 
-通过命令pip install vnpy==1.6.2安装vnpy
-通过命令pip install redtorch 安装redtorch
+通过命令pip install redtorch 安装redtorch，请确保python版本符合要求，TA-Lib已经安装
 
 其他方法
 ::::::
-下载 `vnpy-v1.6.2 <https://github.com/vnpy/vnpy/tree/v1.6.2>`_ 或
-
 下载本项目，使用IDE导入，推荐使用 `PyCharm <https://www.jetbrains.com/pycharm/>`_ ,运行redtorch/trader/run.py
-
-
-**如果使用解压安装vnpy,可能导致redtorch无法访问vnpy中的包,请将vnpy复制到redtorch同级目录,如下**
-
- + your_project_dir
-
-    - redtorch
-    - vnpy
 
 
 联系作者

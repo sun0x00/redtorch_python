@@ -6,18 +6,23 @@
 使用DR_setting.json来配置需要收集的合约，以及主力合约代码。
 '''
 
-import copy
 import json
+import csv
 import os
-from Queue import Queue
-from datetime import datetime
+import copy
+from collections import OrderedDict
+from datetime import datetime, timedelta
+from Queue import Queue, Empty
 from threading import Thread
 
-from redtorch.trader.app.dataRecorder.language import text
 from redtorch.event import Event
 from redtorch.trader.vtEvent import *
-from redtorch.trader.vtFunction import todayDate
+from redtorch.trader.vtFunction import todayDate, getJsonPath
 from redtorch.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
+from redtorch.trader.app.ctaStrategy.ctaTemplate import BarManager
+
+from .drBase import *
+from .language import text
 
 
 ########################################################################
@@ -25,8 +30,7 @@ class DrEngine(object):
     """数据记录引擎"""
     
     settingFileName = 'DR_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)    
+    settingFilePath = getJsonPath(settingFileName, __file__)  
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -41,10 +45,13 @@ class DrEngine(object):
         self.activeSymbolDict = {}
         
         # Tick对象字典
-        self.tickDict = {}
+        self.tickSymbolSet = set()
         
-        # K线对象字典
-        self.barDict = {}
+        # K线合成器字典
+        self.bmDict = {}
+        
+        # 配置字典
+        self.settingDict = OrderedDict()
         
         # 负责执行数据库插入的单独线程相关
         self.active = False                     # 工作状态
@@ -54,49 +61,72 @@ class DrEngine(object):
         # 载入设置，订阅行情
         self.loadSetting()
         
+        # 启动数据插入线程
+        self.start()
+    
+        # 注册事件监听
+        self.registerEvent()  
+    
     #----------------------------------------------------------------------
     def loadSetting(self):
-        """载入设置"""
-        with open(self.settingFileName) as f:
+        """加载配置"""
+        with open(self.settingFilePath) as f:
             drSetting = json.load(f)
-            
+
             # 如果working设为False则不启动行情记录功能
             working = drSetting['working']
             if not working:
                 return
-            
+
+            # Tick记录配置
             if 'tick' in drSetting:
                 l = drSetting['tick']
-                
+
                 for setting in l:
                     symbol = setting[0]
+                    gateway = setting[1]
                     vtSymbol = symbol
 
                     req = VtSubscribeReq()
                     req.symbol = setting[0]
-                    
+
                     # 针对LTS和IB接口，订阅行情需要交易所代码
                     if len(setting)>=3:
                         req.exchange = setting[2]
                         vtSymbol = '.'.join([symbol, req.exchange])
-                    
+
                     # 针对IB接口，订阅行情需要货币和产品类型
                     if len(setting)>=5:
                         req.currency = setting[3]
                         req.productClass = setting[4]
+
+                    self.mainEngine.subscribe(req, gateway)
+
+                    #tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
+                    #self.tickDict[vtSymbol] = tick
+                    self.tickSymbolSet.add(vtSymbol)
                     
-                    self.mainEngine.subscribe(req, setting[1])
-                    
-                    tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
-                    self.tickDict[vtSymbol] = tick
-                    
+                    # 保存到配置字典中
+                    if vtSymbol not in self.settingDict:
+                        d = {
+                            'symbol': symbol,
+                            'gateway': gateway,
+                            'tick': True
+                        }
+                        self.settingDict[vtSymbol] = d
+                    else:
+                        d = self.settingDict[vtSymbol]
+                        d['tick'] = True
+
+            # 分钟线记录配置
             if 'bar' in drSetting:
                 l = drSetting['bar']
-                
+
                 for setting in l:
                     symbol = setting[0]
+                    gateway = setting[1]
                     vtSymbol = symbol
-                    
+
                     req = VtSubscribeReq()
                     req.symbol = symbol                    
 
@@ -107,90 +137,86 @@ class DrEngine(object):
                     if len(setting)>=5:
                         req.currency = setting[3]
                         req.productClass = setting[4]                    
+
+                    self.mainEngine.subscribe(req, gateway)  
                     
-                    self.mainEngine.subscribe(req, setting[1])  
-                    
-                    bar = VtBarData() 
-                    self.barDict[vtSymbol] = bar
-                    
+                    # 保存到配置字典中
+                    if vtSymbol not in self.settingDict:
+                        d = {
+                            'symbol': symbol,
+                            'gateway': gateway,
+                            'bar': True
+                        }
+                        self.settingDict[vtSymbol] = d
+                    else:
+                        d = self.settingDict[vtSymbol]
+                        d['bar'] = True     
+                        
+                    # 创建BarManager对象
+                    self.bmDict[vtSymbol] = BarManager(self.onBar)
+
+            # 主力合约记录配置
             if 'active' in drSetting:
                 d = drSetting['active']
-                
-                # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
-                for activeSymbol, vtSymbol in d.items():
-                    self.activeSymbolDict[vtSymbol] = activeSymbol
-            
-            # 启动数据插入线程
-            self.start()
-            
-            # 注册事件监听
-            self.registerEvent()    
+                self.activeSymbolDict = {vtSymbol:activeSymbol for activeSymbol, vtSymbol in d.items()}
+    
+    #----------------------------------------------------------------------
+    def getSetting(self):
+        """获取配置"""
+        return self.settingDict, self.activeSymbolDict
 
     #----------------------------------------------------------------------
     def procecssTickEvent(self, event):
-        """处理行情推送"""
+        """处理行情事件"""
         tick = event.dict_['data']
         vtSymbol = tick.vtSymbol
-
-        # 转化Tick格式
+        
+        # 生成datetime对象
         if not tick.datetime:
             tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+
+        self.onTick(tick)
         
-        # 更新Tick数据
-        if vtSymbol in self.tickDict:
+        bm = self.bmDict.get(vtSymbol, None)
+        if bm:
+            bm.updateTick(tick)
+        
+    #----------------------------------------------------------------------
+    def onTick(self, tick):
+        """Tick更新"""
+        vtSymbol = tick.vtSymbol
+        
+        if vtSymbol in self.tickSymbolSet:
             self.insertData(TICK_DB_NAME, vtSymbol, tick)
             
             if vtSymbol in self.activeSymbolDict:
                 activeSymbol = self.activeSymbolDict[vtSymbol]
                 self.insertData(TICK_DB_NAME, activeSymbol, tick)
             
-            # 发出日志
+            
             self.writeDrLog(text.TICK_LOGGING_MESSAGE.format(symbol=tick.vtSymbol,
                                                              time=tick.time, 
                                                              last=tick.lastPrice, 
                                                              bid=tick.bidPrice1, 
                                                              ask=tick.askPrice1))
-            
-        # 更新分钟线数据
-        if vtSymbol in self.barDict:
-            bar = self.barDict[vtSymbol]
-            
-            # 如果第一个TICK或者新的一分钟
-            if not bar.datetime or bar.datetime.minute != tick.datetime.minute:    
-                if bar.vtSymbol:
-                    newBar = copy.copy(bar)
-                    self.insertData(MINUTE_DB_NAME, vtSymbol, newBar)
-                    
-                    if vtSymbol in self.activeSymbolDict:
-                        activeSymbol = self.activeSymbolDict[vtSymbol]
-                        self.insertData(MINUTE_DB_NAME, activeSymbol, newBar)                    
-                    
-                    self.writeDrLog(text.BAR_LOGGING_MESSAGE.format(symbol=bar.vtSymbol, 
-                                                                    time=bar.time, 
-                                                                    open=bar.open, 
-                                                                    high=bar.high, 
-                                                                    low=bar.low, 
-                                                                    close=bar.close))
-                         
-                bar.vtSymbol = tick.vtSymbol
-                bar.symbol = tick.symbol
-                bar.exchange = tick.exchange
-                
-                bar.open = tick.lastPrice
-                bar.high = tick.lastPrice
-                bar.low = tick.lastPrice
-                bar.close = tick.lastPrice
-                
-                bar.date = tick.date
-                bar.time = tick.time
-                bar.datetime = tick.datetime
-                bar.volume = tick.volume
-                bar.openInterest = tick.openInterest        
-            # 否则继续累加新的K线
-            else:                               
-                bar.high = max(bar.high, tick.lastPrice)
-                bar.low = min(bar.low, tick.lastPrice)
-                bar.close = tick.lastPrice            
+    
+    #----------------------------------------------------------------------
+    def onBar(self, bar):
+        """分钟线更新"""
+        vtSymbol = bar.vtSymbol
+        
+        self.insertData(MINUTE_DB_NAME, vtSymbol, bar)
+        
+        if vtSymbol in self.activeSymbolDict:
+            activeSymbol = self.activeSymbolDict[vtSymbol]
+            self.insertData(MINUTE_DB_NAME, activeSymbol, bar)                    
+        
+        self.writeDrLog(text.BAR_LOGGING_MESSAGE.format(symbol=bar.vtSymbol, 
+                                                        time=bar.time, 
+                                                        open=bar.open, 
+                                                        high=bar.high, 
+                                                        low=bar.low, 
+                                                        close=bar.close))        
 
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -208,7 +234,8 @@ class DrEngine(object):
         while self.active:
             try:
                 dbName, collectionName, d = self.queue.get(block=True, timeout=1)
-                self.mainEngine.dbInsert(dbName, collectionName, d)
+                flt = {'datetime': d['datetime']}
+                self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
             except Empty:
                 pass
             

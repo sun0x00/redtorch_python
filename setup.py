@@ -26,7 +26,7 @@ def getSubpackages(name):
 
 setup(
     name='redtorch',
-    version='0.1.0a4',
+    version='0.1.1a1',
     description='A framework for developing Quantitative Trading programmes',
     long_description=long_description,
     author='sun0x00',
@@ -51,5 +51,4 @@ setup(
                        '*.h', '*.cpp', '*.bash', '*.txt',
                        '*.dll', '*.lib', '*.so', '*.pyd',
                        '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
-    install_requires=['vnpy'],
 )

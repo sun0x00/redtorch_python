@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-from redtorch.trader.app.riskManager.rmEngine import RmEngine
-from redtorch.trader.app.riskManager.uiRmWidget import RmEngineManager
+from rmEngine import RmEngine
+from uiRmWidget import RmEngineManager
 
 appName = 'RiskManager'
 appDisplayName = u'风险管理'

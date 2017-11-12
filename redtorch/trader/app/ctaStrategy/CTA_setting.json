@@ -15,17 +15,5 @@
         "name": "king keltner",
         "className": "KkStrategy",
         "vtSymbol": "IH1706"
-    },
-
-    {
-        "name": "InterfaceStrategy",
-        "className": "InterfaceStrategy",
-        "vtSymbol": "IF1706"
-    },
-
-    {
-        "name": "InterfaceStrategy2",
-        "className": "InterfaceStrategy2",
-        "vtSymbol": "IF1706"
     }
 ]

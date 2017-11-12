@@ -1,0 +1,22 @@
+[
+    {
+        "name": "IC.11-12",
+
+        "activeLeg": 
+            {
+                "vtSymbol": "IC1711",
+                "ratio": 1,
+                "multiplier": 1.0,
+                "payup": 2
+            },
+
+        "passiveLegs": [
+            {
+                "vtSymbol": "IC1712",
+                "ratio": -1,
+                "multiplier": -1.0,
+                "payup": 2
+            }
+        ]
+    }
+]

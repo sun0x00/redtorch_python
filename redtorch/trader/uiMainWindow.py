@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 import psutil
+import traceback
 
 from redtorch.trader.vtFunction import loadIconPath
 from redtorch.trader.vtGlobal import globalSetting
@@ -30,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # 获取主引擎中的上层应用信息
         self.appDetailList = self.mainEngine.getAllAppDetails()
+
         self.initUi()
         self.loadWindowSettings('custom')
         
@@ -54,6 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, vtText.ERROR, QtCore.Qt.BottomDockWidgetArea)
         widgetTradeM, dockTradeM = self.createDock(TradeMonitor, vtText.TRADE, QtCore.Qt.BottomDockWidgetArea)
         widgetOrderM, dockOrderM = self.createDock(OrderMonitor, vtText.ORDER, QtCore.Qt.RightDockWidgetArea)
+        widgetWorkingOrderM, dockWorkingOrderM = self.createDock(WorkingOrderMonitor, vtText.WORKING_ORDER, QtCore.Qt.BottomDockWidgetArea)
         widgetPositionM, dockPositionM = self.createDock(PositionMonitor, vtText.POSITION, QtCore.Qt.BottomDockWidgetArea)
         widgetAccountM, dockAccountM = self.createDock(AccountMonitor, vtText.ACCOUNT, QtCore.Qt.BottomDockWidgetArea)
         widgetTradingW, dockTradingW = self.createDock(TradingWidget, vtText.TRADING, QtCore.Qt.LeftDockWidgetArea)
@@ -61,7 +64,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabifyDockWidget(dockTradeM, dockErrorM)
         self.tabifyDockWidget(dockTradeM, dockLogM)
         self.tabifyDockWidget(dockPositionM, dockAccountM)
-    
+        self.tabifyDockWidget(dockPositionM, dockWorkingOrderM)
+
         dockTradeM.raise_()
         dockPositionM.raise_()
     
@@ -79,9 +83,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         sysMenu = menubar.addMenu(vtText.SYSTEM)
 
-        # # 设计为只显示存在的接口
-        # gatewayDetails = self.mainEngine.getAllGatewayDetails()
-        #
         # for d in gatewayDetails:
         #     if d['gatewayType'] == GATEWAYTYPE_FUTURES:
         #         self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
@@ -105,10 +106,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # for d in gatewayDetails:
         #     if d['gatewayType'] == GATEWAYTYPE_DATA:
         #         self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
-
-        sysMenu.addAction(self.createAction(vtText.CONNECTION_MANAGER, self.openConnectionManagerDoalog, loadIconPath('conneciton_manger.ico')))
+        #
         # sysMenu.addSeparator()
         # sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect, loadIconPath('database.ico')))
+
+        sysMenu.addAction(self.createAction(vtText.CONNECTION_MANAGER, self.openConnectionManagerDoalog,
+                                            loadIconPath('conneciton_manger.ico')))
         sysMenu.addSeparator()
         sysMenu.addAction(self.createAction(vtText.EXIT, self.close, loadIconPath('exit.ico')))
         
@@ -123,6 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # 帮助
         helpMenu = menubar.addMenu(vtText.HELP)
         helpMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract, loadIconPath('contract.ico')))
+        helpMenu.addAction(self.createAction(vtText.EDIT_SETTING, self.openSettingEditor, loadIconPath('editor.ico')))
         helpMenu.addSeparator()
         helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow, loadIconPath('restore.ico')))
         helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout, loadIconPath('about.ico')))
@@ -196,7 +200,7 @@ class MainWindow(QtWidgets.QMainWindow):
             try:
                 self.widgetDict[appName].show()
             except KeyError:
-                appEngine = self.mainEngine.appDict[appName]
+                appEngine = self.mainEngine.getApp(appName)
                 self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
                 self.widgetDict[appName].show()
                 
@@ -227,31 +231,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------
-    def openCta(self):
-        """打开CTA组件"""
+    def openSettingEditor(self):
+        """打开配置编辑"""
         try:
-            self.widgetDict['ctaM'].showMaximized()
+            self.widgetDict['settingEditor'].show()
         except KeyError:
-            self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
-            self.widgetDict['ctaM'].showMaximized()
-            
-    #----------------------------------------------------------------------
-    def openDr(self):
-        """打开行情数据记录组件"""
-        try:
-            self.widgetDict['drM'].showMaximized()
-        except KeyError:
-            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
-            self.widgetDict['drM'].showMaximized()
-            
-    #----------------------------------------------------------------------
-    def openRm(self):
-        """打开组件"""
-        try:
-            self.widgetDict['rmM'].show()
-        except KeyError:
-            self.widgetDict['rmM'] = RmEngineManager(self.mainEngine.rmEngine, self.eventEngine)
-            self.widgetDict['rmM'].show()      
+            self.widgetDict['settingEditor'] = SettingEditor(self.mainEngine)
+            self.widgetDict['settingEditor'].show()
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):
@@ -264,6 +250,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for widget in self.widgetDict.values():
                 widget.close()
             self.saveWindowSettings('custom')
+
             self.mainEngine.exit()
             event.accept()
         else:
@@ -297,17 +284,24 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadWindowSettings(self, settingName):
         """载入窗口设置"""
         settings = QtCore.QSettings('redtorch.trader', settingName)
-        # 这里由于PyQt4的版本不同，settings.value('state')调用返回的结果可能是：
-        # 1. None（初次调用，注册表里无相应记录，因此为空）
-        # 2. QByteArray（比较新的PyQt4）
-        # 3. QVariant（以下代码正确执行所需的返回结果）
-        # 所以为了兼容考虑，这里加了一个try...except，如果是1、2的情况就pass
-        # 可能导致主界面的设置无法载入（每次退出时的保存其实是成功了）
-        try:
-            self.restoreState(settings.value('state').toByteArray())
-            self.restoreGeometry(settings.value('geometry').toByteArray())    
-        except AttributeError:
-            pass
+        state = settings.value('state')
+        geometry = settings.value('geometry')
+
+        # 尚未初始化
+        if state is None:
+            return
+        # 老版PyQt
+        elif isinstance(state, QtCore.QVariant):
+            self.restoreState(state.toByteArray())
+            self.restoreGeometry(geometry.toByteArray())
+        # 新版PyQt
+        elif isinstance(state, QtCore.QByteArray):
+            self.restoreState(state)
+            self.restoreGeometry(geometry)
+        # 异常
+        else:
+            content = u'载入窗口配置异常，请检查'
+            self.mainEngine.writeLog(content)
         
     #----------------------------------------------------------------------
     def restoreWindow(self):
@@ -351,4 +345,3 @@ class AboutWidget(QtWidgets.QDialog):
         vbox.addWidget(label)
 
         self.setLayout(vbox)
-
