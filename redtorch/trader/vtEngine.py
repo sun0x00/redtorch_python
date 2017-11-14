@@ -169,9 +169,9 @@ class MainEngine(object):
                 if gateway:
                     vtOrderID = gateway.sendOrder(orderReq)
                     self.dataEngine.updateOrderReq(orderReq, vtOrderID)  # 更新发出的委托请求到数据引擎中
-                    return vtOrderID
-                else:
-                    return ''
+                #     return vtOrderID
+                # else:
+                #     return ''
         else:
             gateway = self.getGateway(gatewayName)
             if gateway:
