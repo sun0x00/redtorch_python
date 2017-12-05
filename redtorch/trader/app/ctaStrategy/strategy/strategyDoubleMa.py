@@ -29,7 +29,7 @@ class DoubleMaStrategy(CtaTemplate):
     # 策略参数
     fastWindow = 10     # 快速均线参数
     slowWindow = 60     # 慢速均线参数
-    initDays = 10   # 初始化数据所用的天数
+    initDays = 10       # 初始化数据所用的天数
     
     # 策略变量
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
@@ -54,6 +54,9 @@ class DoubleMaStrategy(CtaTemplate):
                'fastMa1',
                'slowMa0',
                'slowMa1']  
+
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):

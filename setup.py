@@ -26,7 +26,7 @@ def getSubpackages(name):
 
 setup(
     name='redtorch',
-    version='0.1.1a2',
+    version='0.1.2',
     description='A framework for developing Quantitative Trading programmes',
     long_description=long_description,
     author='sun0x00',

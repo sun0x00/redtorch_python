@@ -2,6 +2,20 @@
 
 # 重载sys模块，设置默认字符串编码方式为utf8
 import sys
+import logging
+
+from vtFunction import *
+loggingFormatStr = '[%(asctime)s]-[P:%(process)d]-[T:%(thread)d]-[%(levelname)s]-[%(filename)s]-[%(funcName)s]-[line: %(lineno)d]-[%(message)s]'
+# 日志记录到文件
+logFileName = filename = 'redtorch_' + datetime.now().strftime('%Y%m%d') + '.log'
+logging.basicConfig(filename=getTempPath(logFileName), level=logging.DEBUG, format=loggingFormatStr)
+# 控制台同样打印日志
+consoleLoggingFormatter = logging.Formatter(loggingFormatStr)
+consoleHandler = logging.StreamHandler()
+consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setFormatter(consoleLoggingFormatter)
+logging.getLogger('').addHandler(consoleHandler)
+
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -16,15 +30,12 @@ from redtorch.trader.vtEngine import MainEngine
 from redtorch.trader.uiQt import createQApp
 from redtorch.trader.uiMainWindow import MainWindow
 
-# 加载底层接口
-from redtorch.trader.gateway import (dynamicCtpGateway)
-
 # 加载上层应用
 from redtorch.trader.app import (riskManager, ctaStrategy, spreadTrading)
 
-
 # ----------------------------------------------------------------------
 def main():
+    logging.info("主程序开始启动")
     """主程序入口"""
     # 创建Qt应用对象
     qApp = createQApp()
@@ -35,7 +46,7 @@ def main():
     # 创建主引擎
     me = MainEngine(ee)
 
-    # 添加交易接口
+    # # 添加交易接口
     # me.addDynamicGateway(dynamicCtpGateway)
 
     # 添加上层应用

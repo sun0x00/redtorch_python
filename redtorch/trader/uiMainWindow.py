@@ -2,6 +2,7 @@
 
 import psutil
 import traceback
+import logging
 
 from redtorch.trader.vtFunction import loadIconPath
 from redtorch.trader.vtGlobal import globalSetting
@@ -301,6 +302,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # 异常
         else:
             content = u'载入窗口配置异常，请检查'
+            logging.error(content)
             self.mainEngine.writeLog(content)
         
     #----------------------------------------------------------------------
