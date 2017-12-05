@@ -77,14 +77,25 @@ class BollChannelStrategy(CtaTemplate):
                'longStop',
                'shortStop']  
 
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']
+
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(BollChannelStrategy, self).__init__(ctaEngine, setting)
         
         self.bm = BarManager(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
+        self.bm30 = BarManager(self.onBar, 30, self.on30minBar)
         self.am = ArrayManager()
         
+    #----------------------------------------------------------------------
+    def on30minBar(self, bar):
+        """"""
+
+
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -166,7 +177,10 @@ class BollChannelStrategy(CtaTemplate):
             self.shortStop = self.intraTradeLow + self.atrValue * self.slMultiplier
             
             self.cover(self.shortStop, abs(self.pos), True)
-    
+
+        # 同步数据到数据库
+        self.saveSyncData()
+
         # 发出状态更新事件
         self.putEvent()        
 

@@ -39,6 +39,7 @@ class StTickMonitor(BasicMonitor):
         self.setDataKey('name')
         self.setEventType(EVENT_SPREADTRADING_TICK)
         self.setFont(BASIC_FONT)
+
         self.initTable()
         self.registerEvent()
 
@@ -332,7 +333,6 @@ class StActiveButton(QtWidgets.QPushButton):
     #----------------------------------------------------------------------
     def start(self):
         """启动"""
-
         algoActive = self.algoEngine.startAlgo(self.spreadName)
         if algoActive:
             self.setStarted()        

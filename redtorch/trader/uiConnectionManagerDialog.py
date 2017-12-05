@@ -72,11 +72,8 @@ class ConnectionManagerDialog(QtWidgets.QDialog):
         self.tableView.setColumnWidth(6, 190)
         self.tableView.setColumnWidth(7, 150)
 
-        # 布局
-        layout = QtWidgets.QGridLayout(self)
-
         # 表格布局
-        tableVBoxLayout = QtWidgets.QVBoxLayout(self)
+        tableVBoxLayout = QtWidgets.QVBoxLayout()
         tableVBoxLayout.addWidget(self.tableView)
 
         # 创建添加按钮
@@ -110,6 +107,9 @@ class ConnectionManagerDialog(QtWidgets.QDialog):
         self.connectAllButton.clicked.connect(self.connectAll)
         self.disconnectSelectedButton.clicked.connect(self.disconnectSelected)
         self.disconnectAllButton.clicked.connect(self.disconnectAll)
+
+        # 布局
+        layout = QtWidgets.QGridLayout(self)
 
         # 整合布局
         layout.addLayout(tableVBoxLayout, 0, 0)
