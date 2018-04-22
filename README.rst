@@ -1,5 +1,10 @@
-RedTorch
+RedTorch-Python
 ^^^^^^^^
+
+提示
+-----
+
+项目停止维护，请移步Java移植版本RedTorch
 
 简介
 -----
